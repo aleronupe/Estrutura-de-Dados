@@ -5,7 +5,7 @@
 Variável:   ``X``  
 Ponteiro:   ``*pont``  
 Endereço da Variável: ``&X``
- 
+
 
 * _Gets_  -> Pega até o fim da linha;
 * Com o endereço da primeira posição de uma string e o endereço de uma posição de interesse, é possível calcular a posição da string;
@@ -31,3 +31,8 @@ Em linguagem de ponteiro, temos:
   ```
                                       p + i*COL + j  
   ```
+
+``if(a > b)``  
+  ``return a;``  
+``else``  
+  ``return b``  
