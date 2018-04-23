@@ -31,11 +31,16 @@ int main(int argc, char *argv[])
   'char' encontrado é o fim do arquvi (EOF) ou se é um \n, que
   indica o fim de uma linha*/
   fscanf(matriz, "%d", &numb);
+  //inicializa o menor número, para a função glcm
+  int greatest = numb;
   while(fscanf(matriz, "%c", &typo) != EOF) {
     if(typo == '\n') {
       lines++;
     }
     fscanf(matriz, "%d", &numb);
+    if(numb > greatest) {
+      greatest = numb;
+    }
   }
 
   rewind(matriz);
