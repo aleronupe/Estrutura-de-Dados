@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define LIN 26
-#define COL 20
+#define LIN 30
+#define COL 60
 
 void randomAsphalt(char *asphTest, char *asphLearn, int col);
 void randomGrass(char *grassTest, char *grassLearn, int col);
+void getMatrix(FILE *matriz, int *bigger, int *lines, int *columns);
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char *argv[]) {
 
@@ -21,12 +23,26 @@ int main(int argc, char *argv[]) {
   randomGrass(&grassT[0][0], &grassL[0][0], COL);
 
 
+  int cont = 0, bigger = 0, lines = 0, columns = 0;
+
+  for(cont = 0; cont < 25; cont++) {
+
+    printf("arquivo: %s\n", asphaltT[cont]);
+
+    FILE *matriz;
+    matriz = fopen(asphaltT[cont], "r");
+    getMatrix(matriz, &bigger, &lines, &columns);
+
+    fclose(matriz);
+
+  }
+
 
 
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void randomAsphalt(char *asphTest, char *asphLearn, int col) {
 
@@ -54,10 +70,10 @@ void randomAsphalt(char *asphTest, char *asphLearn, int col) {
   int i = 0, test = 0, learn = 0;
 
   for(i = 0; i < 50; i++) {
-    char asphalt[20] = "asphalt_";
+    char asphalt[50] = "DataSet/asphalt/asphalt_";
     //cria o texto da string
-    asphalt[8] = '0' + (i+1)/10;
-    asphalt[9] = '0' + (i+1)%10;
+    asphalt[24] = '0' + (i+1)/10;
+    asphalt[25] = '0' + (i+1)%10;
     strcat(asphalt, txt);
 
     if(*(list+i) == 1) {
@@ -101,10 +117,10 @@ void randomGrass(char *grassTest, char *grassLearn, int col) {
   int i = 0, test = 0, learn = 0;
 
   for(i = 0; i < 50; i++) {
-    char grass[20] = "grass_";
+    char grass[50] = "DataSet/grass/grass_";
     //cria o texto da string
-    grass[6] = '0' + (i+1)/10;
-    grass[7] = '0' + (i+1)%10;
+    grass[20] = '0' + (i+1)/10;
+    grass[21] = '0' + (i+1)%10;
     strcat(grass, txt);
 
     if(*(list+i) == 1) {
@@ -121,3 +137,51 @@ void randomGrass(char *grassTest, char *grassLearn, int col) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void getMatrix(FILE *matriz, int *bigger, int *lines, int *columns) {
+
+  if (matriz == NULL) {
+    printf("Falha.\n");
+    exit(1);
+  }
+
+  //declara os elementos necessários pra identificar linhas e colunas
+  int numb = 0, auxLin = 0, auxCol = 0;
+  char typo = '.';
+
+  //lê o número de colunas (até o \n)
+  while(typo != '\n') {
+    fscanf(matriz, "%d", &numb);
+    fscanf(matriz, "%c", &typo);
+    auxCol++;
+  }
+
+  *columns = auxCol;
+
+  //volta pro começo da matriz
+  rewind(matriz);
+
+  /*Lê o número de linhas, verificando se o elemento do tipo
+  'char' encontrado é o fim do arquvi (EOF) ou se é um \n, que
+  indica o fim de uma linha*/
+  fscanf(matriz, "%d", &numb);
+  //inicializa o menor número, para a função glcm
+  int greatest = numb;
+  while(fscanf(matriz, "%c", &typo) != EOF) {
+    if(typo == '\n') {
+      auxLin++;
+    }
+    fscanf(matriz, "%d", &numb);
+    if(numb > greatest) {
+      greatest = numb;
+    }
+  }
+
+  *lines = auxLin;
+  *bigger = greatest;
+
+  rewind(matriz);
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
