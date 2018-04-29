@@ -6,7 +6,9 @@
 
 void randomAsphalt(char *asphTest, char *asphLearn, int col);
 void randomGrass(char *grassTest, char *grassLearn, int col);
-void getMatrix(FILE *matriz, int *bigger, int *lines, int *columns);
+void getMatrix(char *name, int *bigger, int *lines, int *columns);
+void saveMatriz(char *name, int **matriz, int lines, int columns);
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,17 +27,32 @@ int main(int argc, char *argv[]) {
 
   int cont = 0, bigger = 0, lines = 0, columns = 0;
 
-  for(cont = 0; cont < 25; cont++) {
 
-    printf("arquivo: %s\n", asphaltT[cont]);
+  for(cont = 0; cont < 25; cont++) { //---------begin for---------/
 
-    FILE *matriz;
-    matriz = fopen(asphaltT[cont], "r");
-    getMatrix(matriz, &bigger, &lines, &columns);
+    printf("aqui: %s\n", asphaltT[cont]);
 
-    fclose(matriz);
+    getMatrix(asphaltT[cont], &bigger, &lines, &columns);
+    printf("maior: %d\nlinhas: %d\ncolunas: %d\n\n", bigger, lines, columns);
 
-  }
+    //Alocação dinâmica da matriz
+    int **matriz;
+    int i = 0;
+
+    matriz = (int **) malloc(lines*sizeof(int *));
+    for(i = 0; i < lines; i++) {
+      *(matriz+i) = (int *) calloc(columns, columns*sizeof(int));
+    }
+
+    saveMatriz(asphaltT[cont], matriz, lines, columns);
+
+
+    for(i = 0; i < lines; i++) {
+      free(*(matriz+i));
+    }
+    free(matriz);
+
+  } //----------end for----------/
 
 
 
@@ -138,7 +155,12 @@ void randomGrass(char *grassTest, char *grassLearn, int col) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void getMatrix(FILE *matriz, int *bigger, int *lines, int *columns) {
+void getMatrix(char *name, int *bigger, int *lines, int *columns) {
+
+  printf("arquivo: %s\n", name);
+
+  FILE *matriz;
+  matriz = fopen(name, "r");
 
   if (matriz == NULL) {
     printf("Falha.\n");
@@ -181,7 +203,44 @@ void getMatrix(FILE *matriz, int *bigger, int *lines, int *columns) {
   *bigger = greatest;
 
   rewind(matriz);
+  fclose(matriz);
 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void saveMatriz(char *name, int **matriz, int lines, int columns) {
+
+  FILE *archive;
+  archive = fopen(name, "r");
+
+  int i = 0, j = 0, numb = 0;
+  char typo = '.';
+
+  /*Aqui utiliza-se a notação de ponteiro para a alocação
+  dos elementos da matriz*/
+  for(i = 0; i < lines; i++) {
+    for(j = 0; j < columns; j++) {
+
+      fscanf(archive, "%d", &numb);
+      fscanf(archive, "%c", &typo);
+
+      *(*(matriz + j) + i) = numb;
+    }
+  }
+
+  fclose(archive);
+
+/*  for(i = 0; i < 5; i++) {
+    printf("%3d ", **(matriz+i));
+  }
+  printf("\n");
+  for(i = 0; i < 5; i++) {
+    printf("%3d ", *(*(matriz+i) + 500));
+  }
+  printf("\n");
+  for(i = 0; i < 5; i++) {
+    printf("%3d ", *(*(matriz+i) + 1024));
+  }
+  printf("\n\n"); */
+}
