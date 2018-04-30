@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #define LIN 30
 #define COL 60
 
@@ -8,6 +9,9 @@ void randomAsphalt(char *asphTest, char *asphLearn, int col);
 void randomGrass(char *grassTest, char *grassLearn, int col);
 void getMatrix(char *name, int *bigger, int *lines, int *columns);
 void saveMatriz(char *name, int **matriz, int lines, int columns);
+void build_bin_vector(int *bin, int **mat, int lin, int col);
+int rotate_bin(int *bin);
+void calculate_glcm(int **mat, int lin, int col, int bigger, int somLin, int somCol);
 
 
 
@@ -26,40 +30,90 @@ int main(int argc, char *argv[]) {
 
 
   int cont = 0, bigger = 0, lines = 0, columns = 0;
+  double *compAsphalt, *compGrass, try = 0.0;
 
+  compAsphalt = (double *) calloc(536, 536*sizeof(double));
+  compGrass = (double *) calloc(536, 536*sizeof(double));
 
+//Aprendizado dos elementos de Asfalto
   for(cont = 0; cont < 25; cont++) { //---------begin for---------/
 
-    printf("aqui: %s\n", asphaltT[cont]);
+    //printf("aqui: %s\n", asphaltT[cont]);
 
-    getMatrix(asphaltT[cont], &bigger, &lines, &columns);
-    printf("maior: %d\nlinhas: %d\ncolunas: %d\n\n", bigger, lines, columns);
+    getMatrix(asphaltL[cont], &bigger, &lines, &columns);
+    double *thisAsphalt;
+    thisAsphalt = (double *) calloc(536, 536*sizeof(double));
+    //printf("maior: %d\nlinhas: %d\ncolunas: %d\n\n", bigger, lines, columns);
 
     //Alocação dinâmica da matriz
     int **matriz;
-    int i = 0;
-
+    int i = 0, j = 0;
     matriz = (int **) malloc(lines*sizeof(int *));
     for(i = 0; i < lines; i++) {
       *(matriz+i) = (int *) calloc(columns, columns*sizeof(int));
     }
 
-    saveMatriz(asphaltT[cont], matriz, lines, columns);
+    //chama função que salva a matriz na memória
+    saveMatriz(asphaltL[cont], matriz, lines, columns);
+    //--CÁLCULO DO ILBP--//
+    /*conjunto de fors responsáveis por considerar somente os elementos do meio
+    da matriz, desconsiderando suas bordas para efeito de cálculo do ILBP*/
+    for(i = 1; i < lines - 1; i++) {
+      for(j = 1; j < columns - 1; j++) {
+        int *bin;
+        bin = (int *) calloc(9, 9*sizeof(int));
+        build_bin_vector(bin, matriz, i, j);
+        int menor = rotate_bin(bin);
+        *(thisAsphalt + menor) = *(thisAsphalt + menor) + 1;
+        free(bin);
+      }
+    }
+
+    //--CÁLCULO DO GLCM--//
+    calculate_glcm(matriz, lines, columns, bigger, -1, -1); //[LIN - 1][COL - 1]
+    calculate_glcm(matriz, lines, columns, bigger, -1,  0); //[LIN - 1][COL    ]
+    calculate_glcm(matriz, lines, columns, bigger, -1,  1); //[LIN - 1][COL + 1]
+    calculate_glcm(matriz, lines, columns, bigger,  0, -1); //[LIN    ][COL - 1]
+    calculate_glcm(matriz, lines, columns, bigger,  0,  1); //[LIN    ][COL + 1]
+    calculate_glcm(matriz, lines, columns, bigger,  1, -1); //[LIN + 1][COL - 1]
+    calculate_glcm(matriz, lines, columns, bigger,  1,  0); //[LIN + 1][COL    ]
+    calculate_glcm(matriz, lines, columns, bigger,  1,  1); //[LIN + 1][COL + 1]
+    printf("\n");
+
+  /*  if(cont == 0 || cont == 24) {
+      double somadora = 0;
+      int low = 0;
+      for(low = 0; low < 512; low++) {
+        printf("%d: %3lf\n", low, *(thisAsphalt + low));
+        if(*(thisAsphalt + low) > 0.0) {
+          somadora = somadora + *(thisAsphalt + low);
+        }
+      }
+
+      printf("\nsomadora: %3lf\n", somadora);
+    }*/
+
+
 
 
     for(i = 0; i < lines; i++) {
       free(*(matriz+i));
     }
     free(matriz);
+    free(thisAsphalt);
 
   } //----------end for----------/
 
 
 
+
+  free(compGrass);
+  free(compAsphalt);
+
   return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void randomAsphalt(char *asphTest, char *asphLearn, int col) {
 
@@ -207,7 +261,7 @@ void getMatrix(char *name, int *bigger, int *lines, int *columns) {
 
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void saveMatriz(char *name, int **matriz, int lines, int columns) {
 
@@ -225,22 +279,177 @@ void saveMatriz(char *name, int **matriz, int lines, int columns) {
       fscanf(archive, "%d", &numb);
       fscanf(archive, "%c", &typo);
 
-      *(*(matriz + j) + i) = numb;
+      *(*(matriz + i) + j) = numb;
     }
   }
 
   fclose(archive);
 
-/*  for(i = 0; i < 5; i++) {
-    printf("%3d ", **(matriz+i));
+  /*for(i = 0; i < 5; i++) {
+    printf("%3d ", *(*(matriz)+ i));
   }
   printf("\n");
   for(i = 0; i < 5; i++) {
-    printf("%3d ", *(*(matriz+i) + 500));
+    printf("%3d ", *(*(matriz+500) + i));
   }
   printf("\n");
   for(i = 0; i < 5; i++) {
-    printf("%3d ", *(*(matriz+i) + 1024));
+    printf("%3d ", *(*(matriz+1024) + i));
   }
-  printf("\n\n"); */
+  printf("\n\n");*/
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void build_bin_vector(int *bin, int **mat, int lin, int col) {
+  // Declaração de variáveis locais.
+  double soma = 0, media = 0;
+  int i = 0, j = 0, bin_count = 0;
+
+
+  // Calcula a soma de todos os elementos da submatriz[3][3].
+  for(i = lin -1; i <= lin + 1; i++) {
+    for(j = col - 1; j <= col + 1; j++) {
+      soma += *(*(mat+i)+j);
+    }
+  }
+
+  // Calcula a média da submatriz [3][3].
+  media = soma/9;
+
+  /* Verifica cada elemento da submatriz se é maior ou igual a média,
+   preenche com 1 onde é maior e com 0 onde é menor em uma matriz,
+   passando os elementos da matriz criada para o vetor bin por linha.*/
+  for(i = lin -1; i <= lin + 1; i++) {
+    for(j = col - 1; j <= col + 1; j++) {
+
+      if( *(*(mat+i)+j) < media ) {
+        *(bin + bin_count) = 0;
+        bin_count++;
+      }
+      else if( *(*(mat+i)+j) >= media ) {
+        *(bin + bin_count) = 1;
+        bin_count++;
+      }
+    }
+  }
+
+  /*if(lin < 3 && col > 1021) {
+    for(i = lin -1; i <= lin + 1; i++) {
+      for(j = col - 1; j <= col + 1; j++) {
+        printf("%3d ", *(*(mat+i)+j));
+      }
+      printf("\n");
+    }
+    printf("\n");
+    printf("soma: %lf\n", soma);
+    printf("media:%lf\n", media);
+    printf("vetor: ");
+    for(int k = 0; k < 9; k++) {
+      printf("%d", *(bin + k));
+    }
+    printf("\n");
+
+  } */
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int rotate_bin(int *bin) {
+
+    // Declaração de variáveis locais.
+    int decimal = 0, i = 0, cont = 0, menor = 515, aux = 0;
+
+    for (cont = 0; cont < 9; cont++) {
+
+      //////printf("vetor: ");
+
+      // Calcula o decimal.
+      decimal = 0;
+      for (i = 0; i < 9; i++) {
+        ///////printf("%d", *(bin + i));
+
+        if (*(bin + i) == 1) {
+          decimal += pow(2, (8 - i));
+        }
+
+      }
+
+      if(decimal < menor) {
+        menor = decimal;
+      }
+      /////printf(" dec: %d\n", decimal);
+
+      // Rotaciona o vetor em 1 bit.
+      aux = *(bin + 8);
+      for(i = 8; i > 0; i--) {
+        *(bin + i) = *(bin + (i - 1));
+      }
+      *bin = aux;
+
+    }
+
+    /////// printf("menor: %d\n\n", menor);
+    // Retorna o menor elemento.
+    return menor;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void calculate_glcm(int **mat, int lin, int col, int bigger, int somLin, int somCol) {
+
+  double **auxMat;
+  int i = 0, j = 0;
+
+  auxMat = (double **) malloc(bigger*sizeof(double *));
+  for(i = 0; i < bigger; i++) {
+    *(auxMat + i) = (double *) calloc(bigger, bigger*sizeof(double));
+  }
+
+
+  int auxi = 0, auxj = 0, auxLin = lin, auxCol = col;
+  //verifica se a o elemento está na linha anterior ou posterior
+  if(somLin == -1) {
+    auxi = 1;
+  }
+  else if(somLin == 1) {
+    auxLin--;
+  }
+
+  //verifica se o elemento está na coluna anterior ou posterior
+  if(somCol == -1) {
+    auxj = 1;
+  }
+  else if(somCol == 1) {
+    auxCol--;
+  }
+
+
+  for(i = auxi; i < auxLin; i++) {
+    for(j = auxj ; j < auxCol ; j++) {
+
+      int owner = *(*(mat + i) + j);
+      int neighbour = *(*( mat + (i + somLin) ) + (j + somCol));
+
+      *(*(auxMat + neighbour) + owner) = *(*(auxMat + neighbour) + owner) + 1;
+    }
+  }
+
+
+  for(i = 0; i < bigger; i++) {
+    for(j = 0 ; j < bigger ; j++) {
+
+      if( *(*(auxMat + i) + j) > 0.0) {
+        printf("centro: %3d  vizinho: %3d\n", j, i);
+        printf("valor: %lf\n\n", *(*(auxMat + i) + j));
+      }
+    }
+  }
+
+
+  for(i = 0; i < bigger; i++) {
+    free(*(auxMat+ i));
+  }
+  free(auxMat);
 }
