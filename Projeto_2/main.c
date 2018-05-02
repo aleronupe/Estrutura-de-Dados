@@ -13,6 +13,7 @@ void build_bin_vector(int *bin, int **mat, int lin, int col);
 int rotate_bin(int *bin);
 void calculate_glcm(int **mat, int lin, int col, int bigger, double *vector, int *contGLCM, int somLin, int somCol);
 void normalize_create(double maior, double menor, double *anormal, double *normalized);
+double euclidiane_distance(double *reference, double *toCompare);
 
 
 
@@ -31,22 +32,24 @@ int main(int argc, char *argv[]) {
 
 
   int cont = 0, bigger = 0, lines = 0, columns = 0;
+  double acerto = 0.0, fakeAccept = 0.0, fakeDecline = 0.0;
   double *compAsphalt, *compGrass;
 
   compAsphalt = (double *) calloc(536, 536*sizeof(double));
   compGrass = (double *) calloc(536, 536*sizeof(double));
 
+/*Print dos valores dos vetores
   for(cont = 0; cont < 536; cont++) {
-    printf("%d: %lf\n", cont, *(compAsphalt + cont));
-  }
+      printf("%d: %lf\n", cont, *(compAsphalt + cont));
+    }
 
-    printf("\n\nGRAMA\n\n");
+      printf("\n\nGRAMA\n\n");
 
-  for(cont = 0; cont < 536; cont++) {
-    printf("%d: %lf\n", cont, *(compGrass + cont));
-  }
+    for(cont = 0; cont < 536; cont++) {
+      printf("%d: %lf\n", cont, *(compGrass + cont));
+    }*/
 
-
+printf("\nConjunto de Aprendizado de Asfalto:\n\n");
 
 //Aprendizado dos elementos de Asfalto
   for(cont = 0; cont < 25; cont++) { //---------begin for---------/
@@ -117,6 +120,8 @@ int main(int argc, char *argv[]) {
 
   } //----------end for----------/
 
+printf("\nConjunto de Aprendizado de Grama:\n\n");
+
 //Aprendizado dos elementos de Grama
   for(cont = 0; cont < 25; cont++) { //---------begin for---------/
 
@@ -162,9 +167,6 @@ int main(int argc, char *argv[]) {
      calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1,  0); //[LIN + 1][COL    ]
      calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1,  1); //[LIN + 1][COL + 1]
 
-
-
-
     //Verificação do maior e do menor elemento do vetor
     double bottom = 99999999999, top = -1;
     for (i = 0; i < 536; i++) {
@@ -197,20 +199,23 @@ int main(int argc, char *argv[]) {
     *(compGrass + cont) = (*(compGrass + cont))/25;
   }
 
-  printf("\n\nASFALTO\n\n");
+  /*Print dos valores dos vetores
+      printf("\n\nASFALTO\n\n");
 
-  for(cont = 0; cont < 536; cont++) {
-    printf("%d: %lf\n", cont, *(compAsphalt + cont));
-  }
+      for(cont = 0; cont < 536; cont++) {
+        printf("%d: %lf\n", cont, *(compAsphalt + cont));
+      }
 
-  printf("\n\nGRAMA\n\n");
+      printf("\n\nGRAMA\n\n");
 
-  for(cont = 0; cont < 536; cont++) {
-    printf("%d: %lf\n", cont, *(compGrass + cont));
-  }
+      for(cont = 0; cont < 536; cont++) {
+        printf("%d: %lf\n", cont, *(compGrass + cont));
+      }*/
+
+printf("\nConjunto de Teste de Asfalto:\n\n");
 
  //Teste dos Elementos de Asfalto
-  for(cont = 0; cont < 25; cont++) { //---------begin for---------/
+ for(cont = 0; cont < 25; cont++) { //---------begin for---------/
 
     //printf("aqui: %s\n", asphaltT[cont]);
 
@@ -269,11 +274,21 @@ int main(int argc, char *argv[]) {
     double dif = top - bottom;
     for(i = 0; i < 536; i++) {
       if(*(thisAsphalt + i) > 0) {
-        *(thisAsphalt) = (*(thisAsphalt + i) - bottom)/dif;
+        *(thisAsphalt + i) = (*(thisAsphalt + i) - bottom)/dif;
       }
     }
 
+    double distGrass = euclidiane_distance(compGrass, thisAsphalt);
+    double distAsphalt = euclidiane_distance(compAsphalt, thisAsphalt);
+     //  printf("distancia de Grama: %lf\n", distGrass);
+     //  printf("distancia de Asfalto: %lf\n\n", distAsphalt);
 
+    if(distGrass < distAsphalt) {
+      fakeAccept++;
+    }
+    else if(distGrass >= distAsphalt) {
+      acerto++;
+    }
 
     for(i = 0; i < lines; i++) {
       free(*(matriz+i));
@@ -283,6 +298,101 @@ int main(int argc, char *argv[]) {
 
   } //----------end for----------/
 
+printf("\nConjunto de Teste de Grama:\n\n");
+
+ //Teste dos Elementos de grama
+ for(cont = 0; cont < 25; cont++) { //---------begin for---------/
+
+   //printf("aqui: %s\n", grassT[cont]);
+
+   getMatrix(grassT[cont], &bigger, &lines, &columns);
+   double *thisGrass;
+   thisGrass = (double *) calloc(536, 536*sizeof(double));
+   //printf("maior: %d\nlinhas: %d\ncolunas: %d\n\n", bigger, lines, columns);
+
+   //Alocação dinâmica da matriz
+   int **matriz;
+   int i = 0, j = 0;
+   matriz = (int **) malloc(lines*sizeof(int *));
+   for(i = 0; i < lines; i++) {
+     *(matriz+i) = (int *) calloc(columns, columns*sizeof(int));
+   }
+
+   //chama função que salva a matriz na memória
+   saveMatriz(grassT[cont], matriz, lines, columns);
+   //--CÁLCULO DO ILBP--//
+   /*conjunto de fors responsáveis por considerar somente os elementos do meio
+   da matriz, desconsiderando suas bordas para efeito de cálculo do ILBP*/
+   for(i = 1; i < lines - 1; i++) {
+     for(j = 1; j < columns - 1; j++) {
+       int *bin;
+       bin = (int *) calloc(9, 9*sizeof(int));
+       build_bin_vector(bin, matriz, i, j);
+       int menor = rotate_bin(bin);
+       *(thisGrass + menor) = *(thisGrass + menor) + 1;
+       free(bin);
+     }
+   }
+
+   //--CÁLCULO DO GLCM--//
+   int contGLCM = 511;
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM, -1, -1); //[LIN - 1][COL - 1]
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM, -1,  0); //[LIN - 1][COL    ]
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM, -1,  1); //[LIN - 1][COL + 1]
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  0, -1); //[LIN    ][COL - 1]
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  0,  1); //[LIN    ][COL + 1]
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1, -1); //[LIN + 1][COL - 1]
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1,  0); //[LIN + 1][COL    ]
+    calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1,  1); //[LIN + 1][COL + 1]
+
+
+   //Verificação do maior e do menor elemento do vetor
+   double bottom = 99999999999, top = -1;
+   for (i = 0; i < 536; i++) {
+     if(*(thisGrass + i) > 0 && *(thisGrass + i) < bottom)
+       bottom = *(thisGrass + i);
+
+     if(*(thisGrass + i) > top)
+       top = *(thisGrass + i);
+   }
+
+   //Normalização do Vetor
+   double dif = top - bottom;
+   for(i = 0; i < 536; i++) {
+     if(*(thisGrass + i) > 0) {
+       *(thisGrass + i) = (*(thisGrass + i) - bottom)/dif;
+     }
+   }
+
+   double distAsphalt = euclidiane_distance(compAsphalt, thisGrass);
+   double distGrass = euclidiane_distance(compGrass, thisGrass);
+
+   if(distGrass > distAsphalt) {
+     fakeDecline++;
+   }
+   else if(distGrass <= distAsphalt) {
+     acerto++;
+   }
+
+
+
+   for(i = 0; i < lines; i++) {
+     free(*(matriz+i));
+   }
+   free(matriz);
+   free(thisGrass);
+
+ } //----------end for----------/
+
+printf("\nResultados:\n\n");
+
+ acerto = (acerto/50)*100;
+ fakeAccept = (fakeAccept/50)*100;
+ fakeDecline = (fakeDecline/50)*100;
+
+ printf("\nTaxa de Acerto: %.2lf%%\n", acerto);
+ printf("Taxa de Falsa Aceitação: %.2lf%%\n", fakeAccept);
+ printf("Taxa de Falsa Rejeição: %.2lf%%\n", fakeDecline);
 
   free(compGrass);
   free(compAsphalt);
@@ -666,4 +776,25 @@ void normalize_create(double maior, double menor, double *anormal, double *norma
     }
     *(normalized + i) = *(normalized + i) + aux;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+double euclidiane_distance(double *reference, double *toCompare) {
+
+  int i = 0;
+  double res = 0.0;
+
+  for(i = 0; i < 536; i++) {
+
+    double ref = *(reference + i);
+    double toComp = *(toCompare + i);
+    double dif = ref - toComp;
+
+    res = pow(dif, 2) + res;
+  }
+
+  res = sqrt(res);
+
+  return res;
 }
