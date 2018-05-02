@@ -11,7 +11,8 @@ void getMatrix(char *name, int *bigger, int *lines, int *columns);
 void saveMatriz(char *name, int **matriz, int lines, int columns);
 void build_bin_vector(int *bin, int **mat, int lin, int col);
 int rotate_bin(int *bin);
-void calculate_glcm(int **mat, int lin, int col, int bigger, int somLin, int somCol);
+void calculate_glcm(int **mat, int lin, int col, int bigger, double *vector, int *contGLCM, int somLin, int somCol);
+void normalize_create(double maior, double menor, double *anormal, double *normalized);
 
 
 
@@ -30,10 +31,22 @@ int main(int argc, char *argv[]) {
 
 
   int cont = 0, bigger = 0, lines = 0, columns = 0;
-  double *compAsphalt, *compGrass, try = 0.0;
+  double *compAsphalt, *compGrass;
 
   compAsphalt = (double *) calloc(536, 536*sizeof(double));
   compGrass = (double *) calloc(536, 536*sizeof(double));
+
+  for(cont = 0; cont < 536; cont++) {
+    printf("%d: %lf\n", cont, *(compAsphalt + cont));
+  }
+
+    printf("\n\nGRAMA\n\n");
+
+  for(cont = 0; cont < 536; cont++) {
+    printf("%d: %lf\n", cont, *(compGrass + cont));
+  }
+
+
 
 //Aprendizado dos elementos de Asfalto
   for(cont = 0; cont < 25; cont++) { //---------begin for---------/
@@ -70,29 +83,29 @@ int main(int argc, char *argv[]) {
     }
 
     //--CÁLCULO DO GLCM--//
-    calculate_glcm(matriz, lines, columns, bigger, -1, -1); //[LIN - 1][COL - 1]
-    calculate_glcm(matriz, lines, columns, bigger, -1,  0); //[LIN - 1][COL    ]
-    calculate_glcm(matriz, lines, columns, bigger, -1,  1); //[LIN - 1][COL + 1]
-    calculate_glcm(matriz, lines, columns, bigger,  0, -1); //[LIN    ][COL - 1]
-    calculate_glcm(matriz, lines, columns, bigger,  0,  1); //[LIN    ][COL + 1]
-    calculate_glcm(matriz, lines, columns, bigger,  1, -1); //[LIN + 1][COL - 1]
-    calculate_glcm(matriz, lines, columns, bigger,  1,  0); //[LIN + 1][COL    ]
-    calculate_glcm(matriz, lines, columns, bigger,  1,  1); //[LIN + 1][COL + 1]
-    printf("\n");
+    int contGLCM = 511;
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM, -1, -1); //[LIN - 1][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM, -1,  0); //[LIN - 1][COL    ]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM, -1,  1); //[LIN - 1][COL + 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  0, -1); //[LIN    ][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  0,  1); //[LIN    ][COL + 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  1, -1); //[LIN + 1][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  1,  0); //[LIN + 1][COL    ]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  1,  1); //[LIN + 1][COL + 1]
 
-  /*  if(cont == 0 || cont == 24) {
-      double somadora = 0;
-      int low = 0;
-      for(low = 0; low < 512; low++) {
-        printf("%d: %3lf\n", low, *(thisAsphalt + low));
-        if(*(thisAsphalt + low) > 0.0) {
-          somadora = somadora + *(thisAsphalt + low);
-        }
-      }
 
-      printf("\nsomadora: %3lf\n", somadora);
-    }*/
 
+
+    //Verificação do maior e do menor elemento do vetor
+    double bottom = 99999999999, top = -1;
+    for (i = 0; i < 536; i++) {
+      if(*(thisAsphalt + i) > 0 && *(thisAsphalt + i) < bottom)
+        bottom = *(thisAsphalt + i);
+
+      if(*(thisAsphalt + i) > top)
+        top = *(thisAsphalt + i);
+    }
+    normalize_create(top, bottom, thisAsphalt, compAsphalt);
 
 
 
@@ -104,7 +117,171 @@ int main(int argc, char *argv[]) {
 
   } //----------end for----------/
 
+//Aprendizado dos elementos de Grama
+  for(cont = 0; cont < 25; cont++) { //---------begin for---------/
 
+    //printf("aqui: %s\n", grassT[cont]);
+
+    getMatrix(grassL[cont], &bigger, &lines, &columns);
+    double *thisGrass;
+    thisGrass = (double *) calloc(536, 536*sizeof(double));
+    //printf("maior: %d\nlinhas: %d\ncolunas: %d\n\n", bigger, lines, columns);
+
+    //Alocação dinâmica da matriz
+    int **matriz;
+    int i = 0, j = 0;
+    matriz = (int **) malloc(lines*sizeof(int *));
+    for(i = 0; i < lines; i++) {
+      *(matriz+i) = (int *) calloc(columns, columns*sizeof(int));
+    }
+
+    //chama função que salva a matriz na memória
+    saveMatriz(grassL[cont], matriz, lines, columns);
+    //--CÁLCULO DO ILBP--//
+    /*conjunto de fors responsáveis por considerar somente os elementos do meio
+    da matriz, desconsiderando suas bordas para efeito de cálculo do ILBP*/
+    for(i = 1; i < lines - 1; i++) {
+      for(j = 1; j < columns - 1; j++) {
+        int *bin;
+        bin = (int *) calloc(9, 9*sizeof(int));
+        build_bin_vector(bin, matriz, i, j);
+        int menor = rotate_bin(bin);
+        *(thisGrass + menor) = *(thisGrass + menor) + 1;
+        free(bin);
+      }
+    }
+
+    //--CÁLCULO DO GLCM--//
+    int contGLCM = 511;
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM, -1, -1); //[LIN - 1][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM, -1,  0); //[LIN - 1][COL    ]
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM, -1,  1); //[LIN - 1][COL + 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  0, -1); //[LIN    ][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  0,  1); //[LIN    ][COL + 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1, -1); //[LIN + 1][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1,  0); //[LIN + 1][COL    ]
+     calculate_glcm(matriz, lines, columns, bigger, thisGrass, &contGLCM,  1,  1); //[LIN + 1][COL + 1]
+
+
+
+
+    //Verificação do maior e do menor elemento do vetor
+    double bottom = 99999999999, top = -1;
+    for (i = 0; i < 536; i++) {
+      if(*(thisGrass + i) > 0 && *(thisGrass + i) < bottom)
+        bottom = *(thisGrass + i);
+
+      if(*(thisGrass + i) > top)
+        top = *(thisGrass + i);
+    }
+    normalize_create(top, bottom, thisGrass, compGrass);
+
+
+
+    for(i = 0; i < lines; i++) {
+      free(*(matriz+i));
+    }
+    free(matriz);
+    free(thisGrass);
+
+  } //----------end for----------/
+
+
+//Média do vetor de Aprendizado de Asfalto
+  for(cont = 0; cont < 536; cont++) {
+    *(compAsphalt + cont) = (*(compAsphalt + cont))/25;
+  }
+
+//Média do vetor de Aprendizado de Grama
+  for(cont = 0; cont < 536; cont++) {
+    *(compGrass + cont) = (*(compGrass + cont))/25;
+  }
+
+  printf("\n\nASFALTO\n\n");
+
+  for(cont = 0; cont < 536; cont++) {
+    printf("%d: %lf\n", cont, *(compAsphalt + cont));
+  }
+
+  printf("\n\nGRAMA\n\n");
+
+  for(cont = 0; cont < 536; cont++) {
+    printf("%d: %lf\n", cont, *(compGrass + cont));
+  }
+
+ //Teste dos Elementos de Asfalto
+  for(cont = 0; cont < 25; cont++) { //---------begin for---------/
+
+    //printf("aqui: %s\n", asphaltT[cont]);
+
+    getMatrix(asphaltT[cont], &bigger, &lines, &columns);
+    double *thisAsphalt;
+    thisAsphalt = (double *) calloc(536, 536*sizeof(double));
+    //printf("maior: %d\nlinhas: %d\ncolunas: %d\n\n", bigger, lines, columns);
+
+    //Alocação dinâmica da matriz
+    int **matriz;
+    int i = 0, j = 0;
+    matriz = (int **) malloc(lines*sizeof(int *));
+    for(i = 0; i < lines; i++) {
+      *(matriz+i) = (int *) calloc(columns, columns*sizeof(int));
+    }
+
+    //chama função que salva a matriz na memória
+    saveMatriz(asphaltT[cont], matriz, lines, columns);
+    //--CÁLCULO DO ILBP--//
+    /*conjunto de fors responsáveis por considerar somente os elementos do meio
+    da matriz, desconsiderando suas bordas para efeito de cálculo do ILBP*/
+    for(i = 1; i < lines - 1; i++) {
+      for(j = 1; j < columns - 1; j++) {
+        int *bin;
+        bin = (int *) calloc(9, 9*sizeof(int));
+        build_bin_vector(bin, matriz, i, j);
+        int menor = rotate_bin(bin);
+        *(thisAsphalt + menor) = *(thisAsphalt + menor) + 1;
+        free(bin);
+      }
+    }
+
+    //--CÁLCULO DO GLCM--//
+    int contGLCM = 511;
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM, -1, -1); //[LIN - 1][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM, -1,  0); //[LIN - 1][COL    ]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM, -1,  1); //[LIN - 1][COL + 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  0, -1); //[LIN    ][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  0,  1); //[LIN    ][COL + 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  1, -1); //[LIN + 1][COL - 1]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  1,  0); //[LIN + 1][COL    ]
+     calculate_glcm(matriz, lines, columns, bigger, thisAsphalt, &contGLCM,  1,  1); //[LIN + 1][COL + 1]
+
+
+    //Verificação do maior e do menor elemento do vetor
+    double bottom = 99999999999, top = -1;
+    for (i = 0; i < 536; i++) {
+      if(*(thisAsphalt + i) > 0 && *(thisAsphalt + i) < bottom)
+        bottom = *(thisAsphalt + i);
+
+      if(*(thisAsphalt + i) > top)
+        top = *(thisAsphalt + i);
+    }
+
+    //Normalização do Vetor
+    double dif = top - bottom;
+    for(i = 0; i < 536; i++) {
+      if(*(thisAsphalt + i) > 0) {
+        *(thisAsphalt) = (*(thisAsphalt + i) - bottom)/dif;
+      }
+    }
+
+
+
+    for(i = 0; i < lines; i++) {
+      free(*(matriz+i));
+    }
+    free(matriz);
+    free(thisAsphalt);
+
+  } //----------end for----------/
 
 
   free(compGrass);
@@ -397,19 +574,22 @@ int rotate_bin(int *bin) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void calculate_glcm(int **mat, int lin, int col, int bigger, int somLin, int somCol) {
+void calculate_glcm(int **mat, int lin, int col, int bigger, double *vector, int *contGLCM, int somLin, int somCol) {
 
   double **auxMat;
   int i = 0, j = 0;
+  int auxBig = bigger + 1;
 
-  auxMat = (double **) malloc(bigger*sizeof(double *));
-  for(i = 0; i < bigger; i++) {
-    *(auxMat + i) = (double *) calloc(bigger, bigger*sizeof(double));
+  //Alocação dinâmica da matriz de análise do GLCM
+  auxMat = (double **) malloc(auxBig*sizeof(double *));
+  for(i = 0; i < bigger + 1; i++) {
+    *(auxMat + i) = (double *) calloc( auxBig, auxBig*sizeof(double));
   }
 
 
   int auxi = 0, auxj = 0, auxLin = lin, auxCol = col;
-  //verifica se a o elemento está na linha anterior ou posterior
+  /*verifica se a o elemento está na linha anterior ou posterior, tomando a
+  precaução de eliminar linhas inacessíveis*/
   if(somLin == -1) {
     auxi = 1;
   }
@@ -417,7 +597,9 @@ void calculate_glcm(int **mat, int lin, int col, int bigger, int somLin, int som
     auxLin--;
   }
 
-  //verifica se o elemento está na coluna anterior ou posterior
+  /*Verifica se o elemento está na coluna anterior ou posterior, tomando
+  a precaução de eliminar colunas inacessíveis*/
+
   if(somCol == -1) {
     auxj = 1;
   }
@@ -425,31 +607,63 @@ void calculate_glcm(int **mat, int lin, int col, int bigger, int somLin, int som
     auxCol--;
   }
 
+  //De acordo com a direção de análise, atualiza a matriz do GLCM
 
   for(i = auxi; i < auxLin; i++) {
     for(j = auxj ; j < auxCol ; j++) {
 
       int owner = *(*(mat + i) + j);
       int neighbour = *(*( mat + (i + somLin) ) + (j + somCol));
+      *(*(auxMat + neighbour) + owner) = *(*(auxMat + neighbour) + owner) + 1.0;
 
-      *(*(auxMat + neighbour) + owner) = *(*(auxMat + neighbour) + owner) + 1;
+    }
+  }
+
+  double con = 0.0, ene = 0.0, hom = 0.0;
+  for(i = 0; i < auxBig ; i++) {
+    for(j = 0 ; j < auxBig ; j++) {
+
+       double p = *(*(auxMat + i) + j);
+       double dif = i - j;
+       if( dif < 0 ) {
+         dif = dif*(-1);
+       }
+
+       con = con +( pow(dif, 2) * p);
+       ene = ene + pow(p,2);
+       hom = hom + (p/(1+dif));
     }
   }
 
 
-  for(i = 0; i < bigger; i++) {
-    for(j = 0 ; j < bigger ; j++) {
-
-      if( *(*(auxMat + i) + j) > 0.0) {
-        printf("centro: %3d  vizinho: %3d\n", j, i);
-        printf("valor: %lf\n\n", *(*(auxMat + i) + j));
-      }
-    }
-  }
+  (*contGLCM)++;
+  *(vector + *contGLCM) = con;
+  (*contGLCM)++;
+  *(vector + *contGLCM) = ene;
+  (*contGLCM)++;
+  *(vector + *contGLCM) = hom;
 
 
-  for(i = 0; i < bigger; i++) {
+  for(i = 0; i < auxBig; i++) {
     free(*(auxMat+ i));
   }
   free(auxMat);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void normalize_create(double maior, double menor, double *anormal, double *normalized) {
+  int i = 0;
+  double aux = 0.0;
+  double dif = maior - menor;
+
+  for(i = 0; i < 536; i++) {
+    if(*(anormal + i) > 0) {
+      aux = (*(anormal + i) - menor)/dif;
+    }
+    else if(*(anormal + i) == 0) {
+      aux = 0.0;
+    }
+    *(normalized + i) = *(normalized + i) + aux;
+  }
 }
