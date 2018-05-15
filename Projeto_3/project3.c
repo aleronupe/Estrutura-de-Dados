@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct contato {
     char nome[100];
@@ -11,61 +12,55 @@ typedef struct contato {
     struct contato *ant;
 
 } Contato;
-/*
-struct LIST * SortList1(struct LIST * pList) {
+
+Contato * ordena_lista(Contato * primeiro_elemento) {
     // zero or one element in list
-    if(pList == NULL || pList->pNext == NULL)
-        return pList;
+    if(primeiro_elemento == NULL || primeiro_elemento->prox == NULL)
+        return primeiro_elemento;
     // head is the first element of resulting sorted list
-    struct LIST * head = NULL;
-    while(pList != NULL) {
-        struct LIST * current = pList;
-        pList = pList->pNext;
-        if(head == NULL || current->iValue < head->iValue) {
+    Contato * head = NULL;
+    while(primeiro_elemento != NULL) {
+
+        Contato * elemento_atual = primeiro_elemento;
+        primeiro_elemento = primeiro_elemento->prox;
+
+        if(head == NULL || strcmp(elemento_atual->nome, head->nome) <= 0) {
             // insert into the head of the sorted list
             // or as the first element into an empty sorted list
-            current->pNext = head;
-            head = current;
-        } else {
+            elemento_atual->prox = head;
+            head = elemento_atual;
+
+        }
+        else {
             // insert current element into proper position in non-empty sorted list
-            struct LIST * p = head;
-            while(p != NULL) {
-                if(p->pNext == NULL || // last element of the sorted list
-                   current->iValue < p->pNext->iValue) // middle of the list
+            struct LIST * elemento_de_analise = head;
+            while(elemento_de_analise != NULL) {
+                if(elemento_de_analise->nome == NULL || strcmp(elemento_atual->nome, elemento_de_analise->prox->nome) <= 0) // middle of the list
                 {
                     // insert into middle of the sorted list or as the last element
-                    current->pNext = p->pNext;
-                    p->pNext = current;
+                    elemento_atual->prox = elemento_de_analise->prox;
+                    elemento_de_analise->prox = elemento_atual;
                     break; // done
                 }
-                p = p->pNext;
+                elemento_de_analise = elemento_de_analise->prox;
             }
         }
     }
     return head;
 }
-*/
+
 int main () {
 
   char aux[100], cel[10];
 
   FILE *fp;
+  Contato *lista;
 
-  fp = fopen("contatos.txt", "r");
 
-  if (fp == NULL) {
-    printf("Falha na abertura do arquivo.\n");
-  }
-
-  fscanf(fp, " %[^\n]", aux);
-
-  printf("%s\n", aux);
-
-  fscanf(fp, " %[^\n]", cel);
-
-  printf("%s\n", cel);
-
-  fclose(fp);
 
   return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+le_contatos(FILE *fp, )
