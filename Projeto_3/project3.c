@@ -22,6 +22,7 @@ Contato *ordena_lista(Contato *lista_de_contatos);
 Contato *novo_contato(Contato *lista_de_contatos);
 Contato *abre_arquivo();
 Contato *remover_contato(Contato *lista);
+void visualizar_contato(Contato*lista);
 void menu();
 
 
@@ -43,20 +44,19 @@ int main () {
     else if(seletor == '2') {
       lista_de_contatos = remover_contato(lista_de_contatos);
     }
+    else if(seletor == '3') {
+      visualizar_contato(lista_de_contatos);
+    }
     else if(seletor == '4') {
-        imprimir_contatos(lista_de_contatos);
+      imprimir_contatos(lista_de_contatos);
     }
     else if(seletor == '5') {
       break;
     }
     else {
-      printf("Opção não declarada\n");
+      printf("Opção inválida!\n");
     }
-
-
   }
-
-
 
   return 0;
 }
@@ -362,6 +362,80 @@ Contato *remover_contato(Contato *lista) {
    return lista;
 }
 
+void visualizar_contato(Contato*lista) {
+
+  char nome_visualiza[101];
+
+  printf("\nInsira o nome do contato a ser visualizado\n");
+  printf("Nome\n");
+  scanf(" %[^\n]", nome_visualiza);
+
+  int cont = 0, size = strlen(nome_visualiza);
+  for(cont = 0; cont < size; cont++) {
+    if(cont == 0){
+      nome_visualiza[cont] = toupper(nome_visualiza[cont]);
+    }
+
+    else if(nome_visualiza[cont-1] == ' ') {
+      nome_visualiza[cont] = toupper(nome_visualiza[cont]);
+    }
+  }
+
+  Contato *atual = lista;
+
+
+  if (atual == NULL) {
+    puts("\nLista de contatos vazia! Impossível visualizar.\n");
+  }
+
+  while (atual != NULL) {
+
+    char nome_comparado[101];
+    strcpy(nome_comparado, atual->nome);
+    int sizeComp = strlen(nome_comparado);
+    // Verifica se o tamanho do nome digitado é maior que o que queremos.
+    // Se for ele já não é o elemento que queremos e irá para o próximo elemento.
+    if (sizeComp >= size) {
+      // Iremos percorrer todos os caracteres.
+      for (cont = 0; cont < size; cont++) {
+        // Se o caractere já for diferente, pula para o próximo elemento, pois não é o desejado.
+        if (nome_comparado[cont] != nome_visualiza[cont]) {
+          atual = atual->prox;
+          break;
+        }
+        // Os caracteres são iguais então iremos conferir
+        // Se o nome é igual ao digitado, se for entra no if.
+        if (cont == size - 1 && sizeComp == size) {
+          printf("\nNome: %s\n", atual->nome);
+          printf("Telefone: %s\n", atual->celular);
+          printf("Endereço: %s\n", atual->endereco);
+          printf("CEP: %d\n", atual->cep);
+          printf("Aniversário: %s\n", atual->data_nascimento);
+
+          atual = atual->prox;
+        }
+        // Os caracteres são iguais então iremos conferir
+        // Se o nome é igual, ou se o nome_comparado tem caractere a mais e não é o desejado
+        // Como por exemplo procuramos por Luan e o nome Luana tem "Luan" porém não é o desejado.
+        else if (cont == size - 1 && sizeComp > size) {
+          if (nome_comparado[cont + 1] == ' ') {
+            printf("\nNome: %s\n", atual->nome);
+            printf("Telefone: %s\n", atual->celular);
+            printf("Endereço: %s\n", atual->endereco);
+            printf("CEP: %d\n", atual->cep);
+            printf("Aniversário: %s\n", atual->data_nascimento);
+
+            atual = atual->prox;
+          } else {
+            atual = atual->prox;
+          }
+        }
+      }
+    } else {
+      atual = atual->prox;
+    }
+  }
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
