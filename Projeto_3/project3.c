@@ -67,7 +67,7 @@ void imprimir_contatos(Contato *lista) {
 
 Contato *ordena_lista(Contato *lista_de_contatos) {
     // zero or one element in list
-    if(lista_de_contatos == NULL || lista_de_contatos->prox == NULL)
+    if(lista_de_contatos == NULL || (lista_de_contatos->prox == NULL && lista_de_contatos->ant == NULL) )
         return lista_de_contatos;
     // head is the first element of resulting sorted list
     Contato * head = NULL;
@@ -79,7 +79,11 @@ Contato *ordena_lista(Contato *lista_de_contatos) {
         if(head == NULL || strcmp(elemento_atual->nome, head->nome) <= 0) {
             // insert into the head of the sorted list
             // or as the first element into an empty sorted list
+            elemento_atual->ant = NULL;
             elemento_atual->prox = head;
+            if(head != NULL) {
+              head->ant = elemento_atual;
+            }
             head = elemento_atual;
 
         }
@@ -87,10 +91,15 @@ Contato *ordena_lista(Contato *lista_de_contatos) {
             // insert current element into proper position in non-empty sorted list
             Contato * elemento_de_analise = head;
             while(elemento_de_analise != NULL) {
-                if(elemento_de_analise->nome == NULL || strcmp(elemento_atual->nome, elemento_de_analise->prox->nome) <= 0) // middle of the list
+                if(elemento_de_analise->prox == NULL || strcmp(elemento_atual->nome, elemento_de_analise->prox->nome) <= 0) // middle of the list
                 {
                     // insert into middle of the sorted list or as the last element
+
                     elemento_atual->prox = elemento_de_analise->prox;
+                    if(elemento_de_analise->prox != NULL) {
+                      elemento_de_analise->prox->ant = elemento_atual;
+                    }
+                    elemento_atual->ant = elemento_de_analise;
                     elemento_de_analise->prox = elemento_atual;
                     break; // done
                 }
@@ -143,9 +152,9 @@ int main () {
 
   fclose(fp);
 
-
-
   imprimir_contatos(lista_de_contatos);
+
+  printf("\nPau no seu cu\n");
 
   lista_de_contatos = ordena_lista(lista_de_contatos);
 
