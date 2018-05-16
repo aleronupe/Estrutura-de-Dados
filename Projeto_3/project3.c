@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct contato {
     char nome[101];
@@ -13,57 +14,55 @@ typedef struct contato {
 
 } Contato;
 
-Contato *cria_lista() {
-  return NULL;
-}
+Contato *cria_lista();
+Contato *criar_contato(char *nome, char *celular, char *endereco, unsigned int cep, char *data_nascimento);
+Contato *insere_contato_no_inicio_da_lista(Contato *lista, Contato *contato);
+void imprimir_contatos(Contato *lista);
+Contato *ordena_lista(Contato *lista_de_contatos);
+Contato *novo_contato(Contato *lista_de_contatos);
+Contato *abre_arquivo();
+Contato *remover_contato(Contato *lista);
+void menu();
 
-Contato *criar_contato(char *nome, char *celular, char *endereco, unsigned int cep, char *data_nascimento) {
-  // Aloca um Contato.
-  Contato *contato = (Contato *)malloc(sizeof(Contato));
-  // TODO free
-  // Iguala os elementos da struct aos elementos recebidos como parâmetros.
-  strcpy(contato->nome, nome);
-  strcpy(contato->celular, celular);
-  strcpy(contato->endereco, endereco);
-  contato->cep = cep;
-  strcpy(contato->data_nascimento, data_nascimento);
-  // O próximo elemento e o anterior são nulos pois está criando o elemento da lista.
-  contato->prox = NULL;
-  contato->ant = NULL;
 
-  return contato;
-}
+int main () {
 
-Contato *insere_contato_no_inicio_da_lista(Contato *lista, Contato *contato) {
+  char seletor = 'P';
+  Contato *lista_de_contatos = cria_lista();
 
-  if (lista != NULL) {
-    lista->ant = contato;
-    contato->prox = lista;
+  lista_de_contatos = abre_arquivo();
+  lista_de_contatos = ordena_lista(lista_de_contatos);
+
+
+  while(seletor != '5')  {
+    menu();
+    scanf(" %c", &seletor);
+    if(seletor == '1') {
+      lista_de_contatos = novo_contato(lista_de_contatos);
+    }
+    else if(seletor == '2') {
+      lista_de_contatos = remover_contato(lista_de_contatos);
+    }
+    else if(seletor == '4') {
+        imprimir_contatos(lista_de_contatos);
+    }
+    else if(seletor == '5') {
+      break;
+    }
+    else {
+      printf("Opção não declarada\n");
+    }
+
+
   }
 
-  return contato;
+
+
+  return 0;
 }
 
-void imprimir_contatos(Contato *lista) {
 
-  Contato *atual = lista;
-
-  if (atual == NULL) {
-    puts("\nLista de contatos vazia!\n");
-  }
-
-  while (atual != NULL) {
-
-    printf("\nNome: %s\n", atual->nome);
-    printf("Telefone: %s\n", atual->celular);
-    printf("Endereço: %s\n", atual->endereco);
-    printf("CEP: %d\n", atual->cep);
-    printf("Aniversário: %s\n", atual->data_nascimento);
-
-    atual = atual->prox;
-  }
-}
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Contato *ordena_lista(Contato *lista_de_contatos) {
   // Nenhum ou um elemento na lista, retorna o que foi passado
@@ -129,38 +128,73 @@ Contato *ordena_lista(Contato *lista_de_contatos) {
   return head;
 }
 
-Contato *insere_contato_na_ordem(Contato *lista_de_contatos) {
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  char nome[101];
-  char celular[11]; //no formato xxxxx-xxxx
-  char endereco[101];
-  unsigned int cep;
-  char data_nascimento[11]; //no formato dd/mm/aaaa
+void imprimir_contatos(Contato *lista) {
 
-  printf("\nInsira um contato na lista de contatos\n");
+  Contato *atual = lista;
 
-  printf("Nome\n");
-  scanf(" %[^\n]", nome);
-  printf("Cel\n");
-  scanf(" %[^\n]", celular);
-  printf("End\n");
-  scanf(" %[^\n]", endereco);
-  printf("CEP\n");
-  scanf(" %d", &cep);
-  printf("Nascimento\n");
-  scanf(" %[^\n]", data_nascimento);
+  if (atual == NULL) {
+    puts("\nLista de contatos vazia!\n");
+  }
 
-  Contato *contato = criar_contato(nome, celular, endereco, cep, data_nascimento);
+  while (atual != NULL) {
 
-  lista_de_contatos = insere_contato_no_inicio_da_lista(lista_de_contatos, contato);
+    printf("\nNome: %s\n", atual->nome);
+    printf("Telefone: %s\n", atual->celular);
+    printf("Endereço: %s\n", atual->endereco);
+    printf("CEP: %d\n", atual->cep);
+    printf("Aniversário: %s\n", atual->data_nascimento);
 
-  lista_de_contatos = ordena_lista(lista_de_contatos);
-
-  return lista_de_contatos;
+    atual = atual->prox;
+  }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int main () {
+Contato *insere_contato_no_inicio_da_lista(Contato *lista, Contato *contato) {
+
+  if (lista != NULL) {
+    lista->ant = contato;
+    contato->prox = lista;
+  }
+
+  return contato;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Contato *criar_contato(char *nome, char *celular, char *endereco, unsigned int cep, char *data_nascimento) {
+  // Aloca um Contato.
+  Contato *contato = (Contato *)malloc(sizeof(Contato));
+  // TODO free
+  // Iguala os elementos da struct aos elementos recebidos como parâmetros.
+  strcpy(contato->nome, nome);
+  strcpy(contato->celular, celular);
+  strcpy(contato->endereco, endereco);
+  contato->cep = cep;
+  strcpy(contato->data_nascimento, data_nascimento);
+  // O próximo elemento e o anterior são nulos pois está criando o elemento da lista.
+  contato->prox = NULL;
+  contato->ant = NULL;
+
+  return contato;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Contato *cria_lista() {
+  return NULL;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Contato *abre_arquivo() {
+  FILE *fp;
+  Contato *lista_de_contatos = cria_lista();
+
+
+  fp = fopen("contatos.txt", "r");
 
   char nome[101];
   char celular[11]; //no formato xxxxx-xxxx
@@ -169,12 +203,6 @@ int main () {
   char data_nascimento[11]; //no formato dd/mm/aaaa
 
   char c; // Pegar elementos char do arquivo.
-
-  Contato *lista_de_contatos = cria_lista();
-
-  FILE *fp;
-
-  fp = fopen("contatos.txt", "r");
 
   if (fp == NULL) {
     printf("Falha na abertura do arquivo.\n");
@@ -201,13 +229,151 @@ int main () {
 
   fclose(fp);
 
+  return lista_de_contatos;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Contato *novo_contato(Contato *lista_de_contatos) {
+
+  char nome[101];
+  char celular[11]; //no formato xxxxx-xxxx
+  char endereco[101];
+  unsigned int cep;
+  char data_nascimento[11]; //no formato dd/mm/aaaa
+
+  printf("\nInsira um contato na lista de contatos\n");
+
+  printf("Nome\n");
+  scanf(" %[^\n]", nome);
+  printf("Cel\n");
+  scanf(" %[^\n]", celular);
+  printf("End\n");
+  scanf(" %[^\n]", endereco);
+  printf("CEP\n");
+  scanf(" %ud", &cep);
+  printf("Nascimento\n");
+  scanf(" %[^\n]", data_nascimento);
+
+  int cont = 0, size = strlen(nome);
+  for(cont = 0; cont < size; cont++) {
+    if(cont == 0){
+      nome[cont] = toupper(nome[cont]);
+    }
+
+    else if(nome[cont-1] == ' ') {
+      nome[cont] = toupper(nome[cont]);
+    }
+  }
+
+  Contato *contato = criar_contato(nome, celular, endereco, cep, data_nascimento);
+
+  lista_de_contatos = insere_contato_no_inicio_da_lista(lista_de_contatos, contato);
+
   lista_de_contatos = ordena_lista(lista_de_contatos);
 
-  //imprimir_contatos(lista_de_contatos);
+  return lista_de_contatos;
+}
 
-  lista_de_contatos = insere_contato_na_ordem(lista_de_contatos);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  imprimir_contatos(lista_de_contatos);
+Contato *remover_contato(Contato *lista) {
 
-  return 0;
+  char nome_remove[101];
+
+  printf("\nInsira o nome do contato a ser removido\n");
+  printf("Nome\n");
+  scanf(" %[^\n]", nome_remove);
+
+  int cont = 0, size = strlen(nome_remove);
+  for(cont = 0; cont < size; cont++) {
+    if(cont == 0){
+      nome_remove[cont] = toupper(nome_remove[cont]);
+    }
+
+    else if(nome_remove[cont-1] == ' ') {
+      nome_remove[cont] = toupper(nome_remove[cont]);
+    }
+  }
+
+  Contato *atual = lista;
+
+
+  if (atual == NULL) {
+    puts("\nLista de contatos vazia! Impossível remover.\n");
+  }
+
+  while (atual != NULL) {
+
+    char nome_comparado[101];
+    strcpy(nome_comparado, atual->nome);
+    int sizeComp = strlen(nome_comparado);
+
+    if(sizeComp >= size) {
+      for(cont = 0; cont < size; cont++) {
+        if(nome_comparado[cont] != nome_remove[cont]) {
+          atual = atual->prox;
+          break;
+        }
+
+        if(cont == size - 1 && sizeComp == size) {
+          Contato *auxiliadora;
+          if(atual->ant == NULL) {
+            lista = atual->prox;
+          }
+          if(atual->ant != NULL) {
+            atual->ant->prox = atual->prox;
+          }
+          if(atual->prox != NULL) {
+            atual->prox->ant = atual->ant;
+          }
+          auxiliadora = atual;
+          atual = atual->prox;
+          free(auxiliadora);
+          printf("Usuário Removido: %s\n", nome_comparado);
+        }
+        else if(cont == size - 1 && sizeComp > size) {
+          if(nome_comparado[cont+1] == ' ') {
+            Contato *auxiliadora;
+            if(atual->ant == NULL) {
+              lista = atual->prox;
+            }
+            if(atual->ant != NULL) {
+              atual->ant->prox = atual->prox;
+            }
+            if(atual->prox != NULL) {
+              atual->prox->ant = atual->ant;
+            }
+            auxiliadora = atual;
+            atual = atual->prox;
+            free(auxiliadora);
+            printf("Usuário Removido: %s\n", nome_comparado);
+          }
+          else {
+            atual = atual->prox;
+          }
+        }
+      }
+    }
+    else {
+        atual = atual->prox;
+    }
+  }
+   return lista;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void menu() {
+  printf("-------------------------------------------------------------------------------------------\n");
+  printf("---\t\t\tSELECIONE A OPÇÃO DESEJADA:\t\t\t\t\t---\n");
+  printf("-------------------------------------------------------------------------------------------\n");
+  printf("---\t\t\t(1) Inserir novo contato\t\t\t\t\t---\n");
+  printf("---\t\t\t(2) Remover contatos de mesmo nome\t\t\t\t---\n");
+  printf("---\t\t\t(3) Visualizar registro\t\t\t\t\t\t---\n");
+  printf("---\t\t\t(4) Visualizar todos os registros em ordem alfabetica\t\t---\n");
+  printf("---\t\t\t(5) Sair\t\t\t\t\t\t\t---\n");
+  printf("-------------------------------------------------------------------------------------------\n");
 }
