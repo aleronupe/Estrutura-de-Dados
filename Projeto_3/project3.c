@@ -21,6 +21,7 @@ void imprimir_contatos(Contato *lista);
 Contato *ordena_lista(Contato *lista_de_contatos);
 Contato *novo_contato(Contato *lista_de_contatos);
 Contato *abre_arquivo();
+void escreve_arquivo(Contato *lista_de_contatos);
 Contato *remover_contato(Contato *lista);
 void visualizar_contato(Contato*lista);
 void menu();
@@ -35,22 +36,23 @@ int main () {
   lista_de_contatos = ordena_lista(lista_de_contatos);
 
 
-  while(seletor != '5')  {
+  while (seletor != '5')  {
     menu();
     scanf(" %c", &seletor);
-    if(seletor == '1') {
+    if (seletor == '1') {
       lista_de_contatos = novo_contato(lista_de_contatos);
     }
-    else if(seletor == '2') {
+    else if (seletor == '2') {
       lista_de_contatos = remover_contato(lista_de_contatos);
     }
-    else if(seletor == '3') {
+    else if (seletor == '3') {
       visualizar_contato(lista_de_contatos);
     }
-    else if(seletor == '4') {
+    else if (seletor == '4') {
       imprimir_contatos(lista_de_contatos);
     }
-    else if(seletor == '5') {
+    else if (seletor == '5') {
+      escreve_arquivo(lista_de_contatos);
       break;
     }
     else {
@@ -230,6 +232,32 @@ Contato *abre_arquivo() {
   fclose(fp);
 
   return lista_de_contatos;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void escreve_arquivo(Contato *lista_de_contatos) {
+
+  FILE *fp;
+
+  fp = fopen("contatos.txt", "w");
+
+  if (fp == NULL) {
+    printf("Falha na abertura do arquivo.\n");
+  }
+
+  while (lista_de_contatos != NULL) {
+    fprintf(fp, "%s\n", lista_de_contatos->nome);
+    fprintf(fp, "%s\n", lista_de_contatos->celular);
+    fprintf(fp, "%s\n", lista_de_contatos->endereco);
+    fprintf(fp, "%d\n", lista_de_contatos->cep);
+    fprintf(fp, "%s\n$\n", lista_de_contatos->data_nascimento);
+
+    lista_de_contatos = lista_de_contatos->prox;
+  }
+
+  fclose(fp);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,7 +464,6 @@ void visualizar_contato(Contato*lista) {
     }
   }
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
