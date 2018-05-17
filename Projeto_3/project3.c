@@ -330,7 +330,7 @@ Contato *remover_contato(Contato *lista) {
 
   char nome_remove[101];
 
-  printf("\nInsira o nome do contato a ser removido\n");
+  printf("\nInsira o nome para remover o contato\n");
   printf("Nome:\n");
   scanf(" %[^\n]", nome_remove);
 
@@ -507,9 +507,9 @@ void menu() {
   printf("---\t\t\tSELECIONE A OPÇÃO DESEJADA:\t\t\t\t\t---\n");
   printf("-------------------------------------------------------------------------------------------\n");
   printf("---\t\t\t(1) Inserir novo contato\t\t\t\t\t---\n");
-  printf("---\t\t\t(2) Remover contatos de mesmo nome\t\t\t\t---\n");
-  printf("---\t\t\t(3) Visualizar registro\t\t\t\t\t\t---\n");
-  printf("---\t\t\t(4) Visualizar todos os registros em ordem alfabetica\t\t---\n");
+  printf("---\t\t\t(2) Remover contatos\t\t\t\t---\n");
+  printf("---\t\t\t(3) Visualizar contato\t\t\t\t\t\t---\n");
+  printf("---\t\t\t(4) Visualizar todos os contatos em ordem alfabetica\t\t---\n");
   printf("---\t\t\t(5) Sair\t\t\t\t\t\t\t---\n");
   printf("-------------------------------------------------------------------------------------------\n");
 }
