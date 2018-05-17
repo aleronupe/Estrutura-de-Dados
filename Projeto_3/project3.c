@@ -334,12 +334,13 @@ Contato *remover_contato(Contato *lista) {
   printf("Nome:\n");
   scanf(" %[^\n]", nome_remove);
 
+  // size se torna o tamanho de nome_visualiza.
   int cont = 0, size = strlen(nome_remove);
+  // Coloca a primeira letra das palavras como maiuscula.
   for(cont = 0; cont < size; cont++) {
     if(cont == 0){
       nome_remove[cont] = toupper(nome_remove[cont]);
     }
-
     else if(nome_remove[cont-1] == ' ') {
       nome_remove[cont] = toupper(nome_remove[cont]);
     }
@@ -347,64 +348,81 @@ Contato *remover_contato(Contato *lista) {
 
   Contato *atual = lista;
 
-
+  // Verifica se tem elemento na lista.
   if (atual == NULL) {
     puts("\nLista de contatos vazia! Impossível remover.\n");
   }
-
+  // Faz o loop enquanto não estiver no final da lista.
   while (atual != NULL) {
 
     char nome_comparado[101];
     strcpy(nome_comparado, atual->nome);
     int sizeComp = strlen(nome_comparado);
-
+    // Verifica se o nome_comparado é maior ou igual ao nome_remove, se não for já vai para o próximo elemento.
     if(sizeComp >= size) {
       for(cont = 0; cont < size; cont++) {
         if(nome_comparado[cont] != nome_remove[cont]) {
           atual = atual->prox;
           break;
         }
-
+        // Se o tamanho dos nomes forem iguais entra no if.
         if(cont == size - 1 && sizeComp == size) {
           Contato *auxiliadora;
+          // Verifica se não é o primeiro da lista.
           if(atual->ant == NULL) {
+            // Se for o primeiro da lista, a elemento se tornará o pŕoximo do atual, pois irá remover o primeiro.
             lista = atual->prox;
           }
           if(atual->ant != NULL) {
+            // Se não for o primeiro da lista, o próximo do anterior do atual irá se tornar o próximo do atual, irá remover o do meio.
             atual->ant->prox = atual->prox;
           }
           if(atual->prox != NULL) {
+            // Verifica se não é o úlimo da lista, se não for o anterior do próximo do atual, irá se tornar o anterior do atual, está apagando o penultimo.
             atual->prox->ant = atual->ant;
           }
+          // Se for o último o penultimo irá se tornar o último.
           auxiliadora = atual;
           atual = atual->prox;
+          // Libera ele da memória.
           free(auxiliadora);
           printf("Usuário Removido: %s\n", nome_comparado);
         }
+        // Os caracteres são iguais então iremos conferir
+        // Se o nome é igual, ou se o nome_comparado tem caractere a mais e não é o desejado
+        // Como por exemplo procuramos por Luan e o nome Luana tem "Luan" porém não é o desejado.
         else if(cont == size - 1 && sizeComp > size) {
           if(nome_comparado[cont+1] == ' ') {
             Contato *auxiliadora;
+            // Verifica se não é o primeiro da lista.
             if(atual->ant == NULL) {
+              // Se for o primeiro da lista, a elemento se tornará o pŕoximo do atual, pois irá remover o primeiro.
               lista = atual->prox;
             }
             if(atual->ant != NULL) {
+              // Se não for o primeiro da lista, o próximo do anterior do atual irá se tornar o próximo do atual, irá remover o do meio.
               atual->ant->prox = atual->prox;
             }
             if(atual->prox != NULL) {
+              // Verifica se não é o úlimo da lista, se não for o anterior do próximo do atual, irá se tornar o anterior do atual, está apagando o penultimo.
               atual->prox->ant = atual->ant;
             }
+            // Se for o último o penultimo irá se tornar o último.
             auxiliadora = atual;
             atual = atual->prox;
+            // Libera ele da memória.
             free(auxiliadora);
             printf("Usuário Removido: %s\n", nome_comparado);
           }
           else {
+            // Passa para o próximo.
             atual = atual->prox;
           }
         }
       }
     }
     else {
+        // Passa para o próximo.
         atual = atual->prox;
     }
   }
@@ -420,13 +438,13 @@ void visualizar_contato(Contato*lista) {
   printf("\nInsira o nome do contato a ser visualizado\n");
   printf("Nome:\n");
   scanf(" %[^\n]", nome_visualiza);
-
+  // size se torna o tamanho de nome_visualiza.
   int cont = 0, size = strlen(nome_visualiza);
+  // Coloca a primeira letra das palavras como maiuscula.
   for(cont = 0; cont < size; cont++) {
     if(cont == 0){
       nome_visualiza[cont] = toupper(nome_visualiza[cont]);
     }
-
     else if(nome_visualiza[cont-1] == ' ') {
       nome_visualiza[cont] = toupper(nome_visualiza[cont]);
     }
