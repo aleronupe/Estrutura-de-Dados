@@ -12,9 +12,21 @@ typedef struct voo {
 } Voo;
 
 typedef struct fila {
-  struct voo *inicio;
-  struct voo *final;
+  Voo *inicio;
+  Voo *final;
 } Fila;
+
+Voo *cria_voo(char *codigo, char modo, int gas) {
+
+  Voo *voo_criado = (Voo *)malloc(sizeof(Voo));
+  // Iguala os elementos da struct aos elementos recebidos como parâmetros.
+  strcpy(voo_criado->codigo, codigo);
+  voo_criado->modo = modo;
+  voo_criado->gas = gas;
+  voo_criado->prox = NULL;
+  // Retorna o contato.
+  return voo_criado;
+}
 
 Voo *insere_voo_na_lista(Voo *lista, Voo *voo_inserido) {
 
@@ -22,7 +34,9 @@ Voo *insere_voo_na_lista(Voo *lista, Voo *voo_inserido) {
     voo_inserido->prox = lista;
   }
 
-return voo_inserido;
+  return voo_inserido;
+
+
 }
 
 Fila *cria_fila() {
@@ -55,14 +69,13 @@ void insere_fila(Fila *fi, Voo *voo) {
     exit(1);
   }
 
-  voo = (Voo*) malloc(sizeof(Voo));
-
   if (voo == NULL) {
     printf("Alocação falhou!\n");
     exit(1);
   }
 
   voo->prox = NULL;
+
   if (fi->final == NULL) { // inicio da fila
     fi->inicio = voo;
   } else {
@@ -92,11 +105,6 @@ void remove_fila(Fila *fi) {
 
 int main() {
 
-  for(int i = 0; i < 30; i++) {
-    int carai = (rand() % 5);
-    printf("socorro: %d\n", carai);
-  }
-
   int nDecol = 0, nAprox = 0, nVoos = 0, cont = 0;
   char *nomeVoos[64] = {"VG3001",
   "JJ4404", "LN7001", "TG1501", "GL7602", "TT1010", "AZ1009", "AZ1008",
@@ -122,8 +130,7 @@ int main() {
   int *voos_selecionados, randomNumb = 0;
   voos_selecionados = (int *) calloc(64, sizeof(int));
 
-  Voo *lista_inicial;
-  lista_inicial = (Voo *) 
+  Voo *lista_inicial = NULL;
   Voo *voo_criado;
 
   int decolagens = 0, aproximacoes = 0;
@@ -138,13 +145,8 @@ int main() {
     }
     else if( *(voos_selecionados + randomNumb) == 0) {
       *(voos_selecionados + randomNumb) = 1;
-      printf("RANDOM NUMB %d\n", randomNumb);
-      printf("Decolagens: %s\n", nomeVoos[randomNumb]);
-      strcpy(voo_criado->codigo, nomeVoos[randomNumb]);
-      voo_criado->modo = 'D';
-      voo_criado->gas = -1;
-      voo_criado->prox = NULL;
-      insere_voo_na_lista(lista_inicial, voo_criado);
+      voo_criado = cria_voo( nomeVoos[randomNumb], 'D', -1);
+      lista_inicial = insere_voo_na_lista(lista_inicial, voo_criado);
 
     }
 
@@ -160,40 +162,75 @@ int main() {
     }
     else if( *(voos_selecionados + randomNumb) == 0) {
       *(voos_selecionados + randomNumb) = 1;
-      printf("RANDOM NUMB %d\n", randomNumb);
-      printf("Aproximacoes: %s\n", nomeVoos[randomNumb]);
-      strcpy(voo_criado->codigo, nomeVoos[randomNumb]);
-      voo_criado->modo = 'D';
-      voo_criado->gas = (rand() % 12);
-      voo_criado->prox = NULL;
-      insere_voo_na_lista(lista_inicial, voo_criado);
+      int gas = (rand() % 13);
+      voo_criado = cria_voo( nomeVoos[randomNumb], 'A', gas);
+      lista_inicial = insere_voo_na_lista(lista_inicial, voo_criado);
     }
 
-  }
-
-  for(cont = 0; cont < 64; cont++) {
-    printf("vet[%d] = %d\n", cont, *(voos_selecionados+cont));
   }
 
   //libera vetor de 64 posições para seleção de voos
   free(voos_selecionados);
 
+/////////////////////////////Printagem/////////////////////////////////
 
 
+
+
+
+  Fila *fi = cria_fila();
+
+  for (int i = 0; i < 13; i++) {
+
+    Voo *elemento_atual = lista_inicial;
+    Voo *elemento_anterior = NULL;
+
+    while (elemento_atual != NULL) {
+
+      if (elemento_atual->gas == i) {
+        if (elemento_atual == lista_inicial) {
+          lista_inicial = lista_inicial->prox;
+        }
+        else {
+          elemento_anterior->prox = elemento_atual->prox;
+        }
+
+        Voo *aux = elemento_atual->prox;
+        insere_fila(fi, elemento_atual);
+        elemento_atual = aux;
+        printf("Código do voo: %s\n", fi->final->codigo);
+        printf("Status: %c\n", fi->final->modo);
+        printf("Querosene da greve: %d\n", fi->final->gas);
+        printf("Horário do início do procedimento:\n");
+        printf("Número do chocolate da pista:\n\n");
+      }
+
+      else {
+        elemento_anterior = elemento_atual;
+        elemento_atual = elemento_atual->prox;
+      }
+    }
+  }
+
+
+  printf("\n\n\n\n/////PAU NO SEU CU////\n/////MENDELSON FILHA DA PUTA////\n\n\n\n");
   printf("nDecol: %d\n", nDecol);
   printf("nAprox: %d\n", nAprox);
   printf("nVoos: %d\n", nVoos);
 
   Voo *fila_da_puta;
   fila_da_puta = lista_inicial;
-  while(fila_da_puta != NULL) {
-    printf("Código do voo: %s\n", lista_inicial->codigo);
-    printf("Status: %c\n", lista_inicial->modo);
-    printf("Querosene da greve: %d", lista_inicial->gas);
-    printf("Horário do início do procedimento:\n");
-    printf("Número da pista:\n\n");
-    fila_da_puta = fila_da_puta->prox;
 
+  int numb = 0;
+  while(fila_da_puta != NULL) {
+    printf("Código do voo: %s\n", fila_da_puta->codigo);
+    printf("Status: %c\n", fila_da_puta->modo);
+    printf("Querosene da greve: %d\n", fila_da_puta->gas);
+    printf("Horário do início do procedimento:\n");
+    printf("Número da pista:\n");
+    printf("numb: %d\n\n", numb);
+    fila_da_puta = fila_da_puta->prox;
+    numb++;
   }
 
 
