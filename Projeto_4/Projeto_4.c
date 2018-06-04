@@ -195,7 +195,7 @@ int main() {
         printf("Status: [Aeronave Pousou]\n");
         printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
         printf("Número da pista: 1\n\n");
-        pista_1 = 3;
+        pista_1 = 4;
         remove_fila(fila_aprox);
       }
       else if(fila_decol->inicio != NULL){
@@ -216,7 +216,7 @@ int main() {
         printf("Status: [Aeronave Pousou]\n");
         printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
         printf("Número da pista: 2\n\n");
-        pista_2 = 3;
+        pista_2 = 4;
         remove_fila(fila_aprox);
       }
       else if(fila_decol->inicio != NULL) {
@@ -237,7 +237,7 @@ int main() {
         printf("Status: [Aeronave Pousou]\n");
         printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
         printf("Número da pista: 3\n\n");
-        pista_3 = 3;
+        pista_3 = 4;
         remove_fila(fila_aprox);
       }
       Voo *avioes_que_caem = fila_aprox->inicio;
