@@ -82,7 +82,7 @@ int main() {
     }
     else if( *(voos_selecionados + randomNumb) == 0) {
       *(voos_selecionados + randomNumb) = 1;
-      int gas = 0;//(rand() % 13);
+      int gas = (rand() % 13);
       voo_criado = cria_voo( nomeVoos[randomNumb], 'A', gas);
       lista_inicial = insere_voo_na_lista(lista_inicial, voo_criado);
     }
@@ -154,7 +154,7 @@ int main() {
   printf("Naproximações: %d\n", nAprox);
   printf("NDecolagens: %d\n", nDecol);
   printf("---------------------------------------------------------------------------------\n\n\n");
-  printf("Listagem de eventos:\n");
+  printf("Listagem de eventos:\n\n\n");
 
 
   //~~~~~~~~~~~~~~~~/LÓGICA DO VOO/~~~~~~~~~~~~~~~~/
@@ -164,175 +164,142 @@ int main() {
 
   while(fila_aprox->inicio != NULL || fila_decol->inicio != NULL) {
 
-          //Verificação de Emergência//
-          int gas_zero = 0;
-          Voo *confere_gas = fila_aprox->inicio;
+    //Verificação de Emergência//
+    int gas_zero = 0;
+    Voo *confere_gas = fila_aprox->inicio;
 
-          while(confere_gas != NULL) {
-            if(confere_gas->gas == 0) {
-              gas_zero++;
-            }
-            confere_gas = confere_gas->prox;
-          }
+    while(confere_gas != NULL) {
+      if(confere_gas->gas == 0) {
+        gas_zero++;
+      }
+      confere_gas = confere_gas->prox;
+    }
 
-          if(gas_zero >= 3) {
-            printf("\n\nALERTA GERAL DE DESVIO DE AERONAVE\n\n\n");
+    if(gas_zero >= 3) {
+      printf("\n\nALERTA GERAL DE DESVIO DE AERONAVE\n\n\n");
 
-          }
+    }
 
-          // if(fila_aprox->inicio != NULL && fila_aprox->inicio->gas == 0 && pista_1 != 0 && pista_2 != 0) {
-          //
-          //   if(pista_3 == 0) {
-          //     printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
-          //     printf("Status: [Aeronave Pousou]\n");
-          //     printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
-          //     printf("Número da pista: 3\n\n");
-          //     pista_3 = 3;
-          //     remove_fila(fila_aprox);
-          //   } else {
-          //     printf("ALERTA de cu CRÍTICO: Aeronave irá cair\n");
-          //     printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
-          //     printf("Status: [Aeronave Caiu]\n\n");
-          //     remove_fila(fila_aprox);
-          //   }
-          //
-          //   if(fila_aprox->inicio != NULL) {
-          //     Voo *avioes_que_caem = fila_aprox->inicio;
-          //     while(avioes_que_caem->gas == 0) {
-          //
-          //       printf("ALERTA CRÍTICO: Aeronave irá cair\n");
-          //       printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
-          //       printf("Status: [Aeronave Caiu]\n\n");
-          //       remove_fila(fila_aprox);
-          //       if(fila_aprox->inicio != NULL) {
-          //         avioes_que_caem = fila_aprox->inicio;
-          //       }
-          //     }
-          //   }
-          // }
+    //Pista 1//
+    if(pista_1 == 0) {
+      if(fila_aprox->inicio != NULL) {
+        printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
+        printf("Status: [Aeronave Pousou]\n");
+        printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
+        printf("Número da pista: 1\n\n");
+        pista_1 = 3;
+        remove_fila(fila_aprox);
+      }
+      else if(fila_decol->inicio != NULL){
+        printf("Código do voo: %s\n", fila_decol->inicio->codigo);
+        printf("Status: [Aeronave Decolou]\n");
+        printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
+        printf("Número da pista: 1\n\n");
+        pista_1 = 2;
+        remove_fila(fila_decol);
+      }
+    }
 
 
-          //Pista 1//
-          if(pista_1 == 0) {
-            if(fila_aprox->inicio != NULL) {
-              printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
-              printf("Status: [Aeronave Pousou]\n");
-              printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
-              printf("Número da pista: 1\n\n");
-              pista_1 = 3;
-              remove_fila(fila_aprox);
-            }
-            else {
-              printf("Código do voo: %s\n", fila_decol->inicio->codigo);
-              printf("Status: [Aeronave Decolou]\n");
-              printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
-              printf("Número da pista: 1\n\n");
-              pista_1 = 2;
-              remove_fila(fila_decol);
-            }
-          }
+    //Pista 2//
+    if(pista_2 == 0) {
+      if(fila_aprox->inicio != NULL) {
+        printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
+        printf("Status: [Aeronave Pousou]\n");
+        printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
+        printf("Número da pista: 2\n\n");
+        pista_2 = 3;
+        remove_fila(fila_aprox);
+      }
+      else if(fila_decol->inicio != NULL) {
+        printf("Código do voo: %s\n", fila_decol->inicio->codigo);
+        printf("Status: [Aeronave Decolou]\n");
+        printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
+        printf("Número da pista: 2\n\n");
+        pista_2 = 2;
+        remove_fila(fila_decol);
+      }
+    }
 
 
-          //Pista 2//
-          if(pista_2 == 0) {
-            if(fila_aprox->inicio != NULL) {
-              printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
-              printf("Status: [Aeronave Pousou]\n");
-              printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
-              printf("Número da pista: 2\n\n");
-              pista_2 = 3;
-              remove_fila(fila_aprox);
-            }
-            else {
-              printf("Código do voo: %s\n", fila_decol->inicio->codigo);
-              printf("Status: [Aeronave Decolou]\n");
-              printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
-              printf("Número da pista: 2\n\n");
-              pista_2 = 2;
-              remove_fila(fila_decol);
-            }
-          }
+    //Pista 3//
+    if(gas_zero >= 3) {
+      if(pista_3 == 0) {
+        printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
+        printf("Status: [Aeronave Pousou]\n");
+        printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
+        printf("Número da pista: 3\n\n");
+        pista_3 = 3;
+        remove_fila(fila_aprox);
+      }
+      Voo *avioes_que_caem = fila_aprox->inicio;
+      while(avioes_que_caem != NULL) {
+        if(avioes_que_caem->gas == 0) {
+          printf("ALERTA CRÍTICO: Aeronave irá cair\n");
+          printf("Código do voo: %s\n", avioes_que_caem->codigo);
+          printf("Status: [Aeronave Caiu]\n\n");
+          printf("teu cu\n");
+          remove_fila(fila_aprox);
+        }
+        avioes_que_caem = avioes_que_caem->prox;
+      }
+    }
 
-
-          //Pista 3//
-          if(gas_zero >= 3) {
-            if(pista_3 == 0) {
-              printf("Código do voo: %s\n", fila_aprox->inicio->codigo);
-              printf("Status: [Aeronave Pousou]\n");
-              printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
-              printf("Número da pista: 3\n\n");
-              pista_3 = 3;
-              remove_fila(fila_aprox);
-            }
-
-            Voo *avioes_que_caem = fila_aprox->inicio;
-            while(avioes_que_caem != NULL) {
-              if(avioes_que_caem->gas == 0) {
-                printf("ALERTA CRÍTICO: Aeronave irá cair\n");
-                printf("Código do voo: %s\n", avioes_que_caem->codigo);
-                printf("Status: [Aeronave Caiu]\n\n");
-                remove_fila(fila_aprox);
-                avioes_que_caem = avioes_que_caem->prox;
-              }
-            }
-          }
-
-          if(pista_3 == 0) {
-            if(fila_decol->inicio != NULL) {
-              printf("Código do voo: %s\n", fila_decol->inicio->codigo);
-              printf("Status: [Aeronave Decolou]\n");
-              printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
-              printf("Número da pista: 3\n\n");
-              pista_3 = 2;
-              remove_fila(fila_decol);
-            }
-          }
+    if(pista_3 == 0) {
+      if(fila_decol->inicio != NULL) {
+        printf("Código do voo: %s\n", fila_decol->inicio->codigo);
+        printf("Status: [Aeronave Decolou]\n");
+        printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
+        printf("Número da pista: 3\n\n");
+        pista_3 = 2;
+        remove_fila(fila_decol);
+      }
+    }
 
 
 
-          //Verificação de Rotina//
-          if(pista_1 > 0){
-            pista_1--;
-          }
+    //Verificação de Rotina//
+    if(pista_1 > 0){
+      pista_1--;
+    }
 
-          if(pista_2 > 0){
-            pista_2--;
-          }
+    if(pista_2 > 0){
+      pista_2--;
+    }
 
-          if(pista_3 > 0){
-            pista_3--;
-          }
+    if(pista_3 > 0){
+      pista_3--;
+    }
 
-          minuto+= 5;
-          if(minuto >= 60) {
-            hora++;
-            minuto = 0;
-            if(hora >= 24) {
-              hora = 0;
-            }
-          }
+    minuto+= 5;
+    if(minuto >= 60) {
+      hora++;
+      minuto = 0;
+      if(hora >= 24) {
+        hora = 0;
+      }
+    }
 
-          if(verifica_gas%10 == 0) {
-            Voo *gasta_gas = fila_aprox->inicio;
+    if(verifica_gas%10 == 0) {
+      Voo *gasta_gas = fila_aprox->inicio;
 
-            while(gasta_gas != NULL) {
-              gasta_gas->gas = (gasta_gas->gas) - 1;
-              gasta_gas = gasta_gas->prox;
-            }
+      while(gasta_gas != NULL) {
+        gasta_gas->gas = (gasta_gas->gas) - 1;
+        gasta_gas = gasta_gas->prox;
+      }
+      gasta_gas = fila_aprox->inicio;
 
-            gasta_gas = fila_aprox->inicio;
+      // printf("TA ACABANDO A GASOSA FDP\n\n\n");
+      // while(gasta_gas != NULL) {
+      //   printf("Código do voo: %s\n", gasta_gas->codigo);
+      //   printf("Status: %c\n", gasta_gas->modo);
+      //   printf("Querosene da greve: %d\n\n", gasta_gas->gas);
+      //   gasta_gas = gasta_gas->prox;
+      // }
 
-            printf("TA ACABANDO A GASOSA FDP\n\n\n");
-            while(gasta_gas != NULL) {
-              printf("Código do voo: %s\n", gasta_gas->codigo);
-              printf("Status: %c\n", gasta_gas->modo);
-              printf("Querosene da greve: %d\n\n", gasta_gas->gas);
-              gasta_gas = gasta_gas->prox;
-            }
+    }
 
-          }
-
-          verifica_gas++;
+    verifica_gas++;
 
   }
 
@@ -341,7 +308,7 @@ int main() {
 
   /////////////////////////////Printagem/////////////////////////////////
 
-  printf("----isso daqui nao printa-------------------------------------------------\n");
+  printf("----Final do programa-------------------------------------------------\n");
 
   // Voo *lista_de_voos;
   // lista_de_voos = lista_inicial;
