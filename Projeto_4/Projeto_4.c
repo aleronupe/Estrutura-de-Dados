@@ -185,7 +185,7 @@ int main() {
 
     if(gas_zero >= 3) {
       printf("\n\nALERTA GERAL DE DESVIO DE AERONAVE\n\n");
-
+      //printf("Tentativa de pouso na pista 3\n\n");
     }
 
     //Pista 1//
@@ -233,23 +233,16 @@ int main() {
     //Pista 3//
     if(gas_zero >= 3) {
       if(pista_3 == 0) {
+        //printf("Pouso na pista 3 foi um sucesso!\n\n");
         printf("Código do voo: %s - %c - %d\n", fila_aprox->inicio->codigo, fila_aprox->inicio->modo, fila_aprox->inicio->gas);
         printf("Status: [Aeronave Pousou]\n");
         printf("Horário do ínicio do procedimento: %02d:%02d\n", hora, minuto);
         printf("Número da pista: 3\n\n");
         pista_3 = 4;
         remove_fila(fila_aprox);
-      }
-      Voo *avioes_que_caem = fila_aprox->inicio;
-      while(avioes_que_caem != NULL) {
-        if(avioes_que_caem->gas == 0) {
-          printf("ALERTA CRÍTICO: Aeronave irá cair\n\n");
-          printf("Código do voo: %s - %c - %d\n", avioes_que_caem->codigo, avioes_que_caem->modo, avioes_que_caem->gas);
-          printf("Status: [Aeronave Caiu]\n\n");
-          remove_fila(fila_aprox);
-        }
-        avioes_que_caem = avioes_que_caem->prox;
-      }
+      }// else {
+        //printf("Pouso na pista 3 não deu certo, pista ocupada!\n\n");
+      //}
     }
 
     if(pista_3 == 0) {
@@ -293,6 +286,19 @@ int main() {
         gasta_gas = gasta_gas->prox;
       }
       gasta_gas = fila_aprox->inicio;
+    }
+
+    // Derruba os que estão com combustível menos de 0
+    Voo *avioes_que_caem = fila_aprox->inicio;
+
+    while(avioes_que_caem != NULL) {
+      if(avioes_que_caem->gas < 0) {
+        printf("ALERTA CRÍTICO: Aeronave irá cair\n\n");
+        printf("Código do voo: %s - %c - %d\n", avioes_que_caem->codigo, avioes_que_caem->modo, avioes_que_caem->gas);
+        printf("Status: [Aeronave Caiu]\n\n");
+        remove_fila(fila_aprox);
+      }
+      avioes_que_caem = avioes_que_caem->prox;
     }
 
     verifica_gas++;
